@@ -17,4 +17,21 @@ class EventTest {
                 .build();
         assertThat(event).isNotNull();
     }
+
+    @Test
+    public void javaBean() {
+
+        //Given
+        String name = "죠르디 자바 코딩 강의";
+        String description = "죠르디의 자바 노하우가 깃든 코딩 강의 입니다.";
+
+        //When
+        Event event = new Event();
+        event.setName(name);
+        event.setDescription(description);
+
+        //Then
+        assertThat(event.getName()).isEqualTo(name);
+        assertThat(event.getDescription()).isEqualTo(description);
+    }
 }

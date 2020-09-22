@@ -22,4 +22,17 @@ public class Event {
     private boolean offline;
     private boolean free;
     private EventStatus eventStatus;
+
+    public String getEventPrice() {
+        if(basePrice == 0  && maxPrice == 100) {
+            return "FCFS"; // first come, first served
+        } else if (basePrice == 0 && maxPrice == 0) {
+            return "free";
+        } else if (basePrice == 100 && maxPrice == 0) {
+            return "unlimitedAuction";
+        } else if (basePrice == 100 && maxPrice == 200) {
+            return "unlimitedAuctionWithFCFS";
+        }
+
+    }
 }
