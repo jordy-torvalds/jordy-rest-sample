@@ -2,12 +2,18 @@ package me.jordy.rest.sample.events;
 
 import lombok.*;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Builder @NoArgsConstructor @AllArgsConstructor
 @Getter @Setter @EqualsAndHashCode(of="id")
 public class Event {
 
+    @Id
+    @GeneratedValue
     private Integer id;
     private String name;
     private String description;
@@ -21,6 +27,8 @@ public class Event {
     private int limitOfEnrollment;
     private boolean offline;
     private boolean free;
+
+    @Enumerated(EnumType.STRING)
     private EventStatus eventStatus;
 
     public String getEventPrice() {

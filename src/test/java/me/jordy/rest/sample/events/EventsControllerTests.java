@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jordy.rest.sample.common.CustomMediaTypes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -36,6 +38,15 @@ public class EventsControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
+
+    /**
+     *  @WebMvcTest 가 웹용 빈만 등록을 해주고, 리포지토리를 빈으로 등록 해주지 않음
+     * 그래서 리포지토리의 모킹이 필요함.
+     */
+
+    @MockBean
+    EventRepository eventRepository;
+
     @Test
     public void createEvent() throws Exception {
         Event event = Event.builder()
@@ -50,6 +61,10 @@ public class EventsControllerTests {
                 .limitOfEnrollment(20)
                 .location("서울 스타듀밸리")
                 .build();
+
+        event.setId(10);
+        /* EventRepository가 빈에 등록되어 있지 않으므로 모킹하여 save 호출시 이벤트가 반환 되도록 함*/
+        Mockito.when(eventRepository.save(event)).thenReturn(event);
 
         mockMvc.perform(post("/api/events/")
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
