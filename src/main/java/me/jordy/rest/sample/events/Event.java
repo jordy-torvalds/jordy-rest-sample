@@ -33,6 +33,6 @@ public class Event {
         } else if (basePrice == 100 && maxPrice == 200) {
             return "unlimitedAuctionWithFCFS";
         }
-
+        return "";
     }
 }
