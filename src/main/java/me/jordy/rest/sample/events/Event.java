@@ -29,16 +29,18 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
 
-    public String getEventPrice() {
-        if(basePrice == 0  && maxPrice == 100) {
-            return "FCFS"; // first come, first served
-        } else if (basePrice == 0 && maxPrice == 0) {
-            return "free";
+    public void update() {
+        if(basePrice == 0  && maxPrice == 0) {
+            this.free = true;
+        } else if (basePrice == 0 && maxPrice == 100) {
+            this.free = false;
         } else if (basePrice == 100 && maxPrice == 0) {
-            return "unlimitedAuction";
-        } else if (basePrice == 100 && maxPrice == 200) {
-            return "unlimitedAuctionWithFCFS";
+            this.free = false;
         }
-        return "";
+
+        if(location != null )
+            this.offline=false;
+        else if(location == null )
+            this.offline=true;
     }
 }

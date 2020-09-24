@@ -3,6 +3,7 @@ package me.jordy.rest.sample.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jordy.rest.sample.common.CustomMediaTypes;
+import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,6 +63,7 @@ public class EventsControllerTests {
 //    EventRepository eventRepository;
 
     @Test
+    @TestDescription("완전한 Event 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
     public void createEvent() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -87,9 +89,9 @@ public class EventsControllerTests {
         //Mockito.when(eventRepository.save(event)).thenReturn(event);
 
         mockMvc.perform(post("/api/events/")
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaTypes.HAL_JSON)
-                    .content(objectMapper.writeValueAsString(event)))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
 
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -99,6 +101,101 @@ public class EventsControllerTests {
                 .andExpect(jsonPath("id").value(Matchers.not(100)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("free").value(Matchers.not(true)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))  /* 값 일치 확인 Matcher 사용*/
+        ;
+    }
+
+    /**
+     * 알 수 없는 필드가 같이 들어왔을 때
+     * Bad Request를 떨어트리는 테스트.
+     * 핵심 소스는 프로퍼티즈의 spring.jackson.deserialization.fail-on-unknown-properties=true !
+     * @throws Exception
+     */
+    @Test
+    @TestDescription("알 수 없는 필드가 같이 들어왔을 때 Bad Request가 떨어지는 지 확인하는 테스트")
+    public void createEvent_BadRequest() throws Exception {
+        Event event = Event.builder()
+                .id(100)
+                .name("죠르디 스프링 특강")
+                .description("죠르디가 진행하는 스프링 특강")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020,9,23,12,23,45))
+                .closeEnrollmentDateTime(LocalDateTime.of(2020,9,23,14,23,45))
+                .beginEventDateTime(LocalDateTime.of(2020,10,23,12,23,45))
+                .endEventDateTime(LocalDateTime.of(2020,10,23,14,23,45))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(20)
+                .location("서울 스타듀밸리")
+                .free(true)
+                .offline(true)
+                .eventStatus(EventStatus.PUBLISHED)
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
+
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+
+    /**
+     * 알 수 없는 필드가 같이 들어왔을 때
+     * Bad Request를 떨어트리는 테스트.
+     * 핵심 소스는 프로퍼티즈의 spring.jackson.deserialization.fail-on-unknown-properties=true !
+     * @throws Exception
+     */
+    @Test
+    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
+    public void createEvent_BadRequest_EmptyInput() throws Exception {
+        EventDto event = EventDto.builder()
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
+
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+
+    /**
+     * 알 수 없는 필드가 같이 들어왔을 때
+     * Bad Request를 떨어트리는 테스트.
+     * 핵심 소스는 프로퍼티즈의 spring.jackson.deserialization.fail-on-unknown-properties=true !
+     * @throws Exception
+     */
+    @Test
+    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
+    public void createEvent_BadRequest_WrongInput() throws Exception {
+        EventDto event = EventDto.builder()
+                .name("죠르디 스프링 특강")
+                .description("죠르디가 진행하는 스프링 특강")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020,9,26,12,23,45))
+                .closeEnrollmentDateTime(LocalDateTime.of(2020,9,25,14,23,45))
+                .beginEventDateTime(LocalDateTime.of(2020,10,24,12,23,45))
+                .endEventDateTime(LocalDateTime.of(2020,10,23,14,23,45))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(20)
+                .location("서울 스타듀밸리")
+                .build();
+
+        mockMvc.perform(post("/api/events/")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
+
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists())
         ;
     }
 }
