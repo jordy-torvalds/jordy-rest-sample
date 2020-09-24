@@ -3,11 +3,14 @@ package me.jordy.rest.sample.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jordy.rest.sample.common.CustomMediaTypes;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /* Junit 4 를 기준으로 작성된 테스트 */
 @RunWith(SpringRunner.class)
-@WebMvcTest
+/**
+ * @WebMvcTest는 컨트롤러 레이어에 슬라이싱 테스트를 적용하는 어노태이션.
+ * 그래서  Repository는 빈 등록이 되지 않음.
+ * 만약 테스트 중 실제 DB에 CRUD 하는 것이 필요할 경우 아래와 같이 어노태이션 교체가 필요
+ * - @SpringBootTest           <-- 통합테스트 시 사용되는 어노태이션. 기본 웹 환경 값이 Mock으로 되어 있습니다.
+ * - @AutoConfigureMockMvc     <-- MockMvc를 자동설정 해주는 어노태이션
+ */
+
+@SpringBootTest
+@AutoConfigureMockMvc
 public class EventsControllerTests {
 
     /**
@@ -42,14 +54,17 @@ public class EventsControllerTests {
     /**
      *  @WebMvcTest 가 웹용 빈만 등록을 해주고, 리포지토리를 빈으로 등록 해주지 않음
      * 그래서 리포지토리의 모킹이 필요함.
+     *
+     *  EventRepository가 빈에 등록되어 있지 않으므로 모킹하여 save 호출시 이벤트가 반환 되도록 함
+     *  통합 테스트 설정에 따라 해당 코드를 주석 처리
      */
-
-    @MockBean
-    EventRepository eventRepository;
+//    @MockBean
+//    EventRepository eventRepository;
 
     @Test
     public void createEvent() throws Exception {
         Event event = Event.builder()
+                .id(100)
                 .name("죠르디 스프링 특강")
                 .description("죠르디가 진행하는 스프링 특강")
                 .beginEnrollmentDateTime(LocalDateTime.of(2020,9,23,12,23,45))
@@ -60,11 +75,16 @@ public class EventsControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(20)
                 .location("서울 스타듀밸리")
+                .free(true)
+                .offline(true)
+                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
-        event.setId(10);
-        /* EventRepository가 빈에 등록되어 있지 않으므로 모킹하여 save 호출시 이벤트가 반환 되도록 함*/
-        Mockito.when(eventRepository.save(event)).thenReturn(event);
+        /**
+         *  EventRepository가 빈에 등록되어 있지 않으므로 모킹하여 save 호출시 이벤트가 반환 되도록 함
+         *  통합 테스트 설정에 따라 해당 코드를 주석 처리
+         */
+        //Mockito.when(eventRepository.save(event)).thenReturn(event);
 
         mockMvc.perform(post("/api/events/")
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -75,6 +95,10 @@ public class EventsControllerTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("id").exists())
                 .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE,MediaTypes.HAL_JSON_VALUE+";charset=UTF-8"));
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE,MediaTypes.HAL_JSON_VALUE+";charset=UTF-8"))
+                .andExpect(jsonPath("id").value(Matchers.not(100)))  /* 값 일치 확인 Matcher 사용*/
+                .andExpect(jsonPath("free").value(Matchers.not(true)))  /* 값 일치 확인 Matcher 사용*/
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))  /* 값 일치 확인 Matcher 사용*/
+        ;
     }
 }
