@@ -1,11 +1,14 @@
 package me.jordy.rest.sample.events;
 
-import org.junit.jupiter.api.Test;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-class EventTest {
+@RunWith(JUnitParamsRunner.class)
+public class EventTest {
 
     @Test
     public void builder() {
@@ -36,70 +39,78 @@ class EventTest {
     }
 
     @Test
-    public void testFree() {
+    /**
+     *  파라미터 적용 방법
+     *  1. 명시적으로 할당
+     *  @Parameters({
+     *         "0, 0, true",
+     *         "100, 0, false",
+     *         "0, 100, false"
+     *  })
+     *
+     *  2. 컨벤션을 준수한 이름을 가진 Object 배열 반환 메서드를 파라미터로 사용
+     *  - 메서드에 @Parameters 어노태이션 붙이기
+     *  - 컨벤션을 준수한 이름을 가진 객체 선언
+     *
+     *      private Object[] parametersForTestFree() {
+     *         return new Object[] {
+     *                 new Object [] {0, 0, true},
+     *                 new Object [] {100, 0, false},
+     *                 new Object [] {0, 100, false},
+     *                 new Object [] {100, 200, false}
+     *         };
+     *     }
+     *
+     *  3. 원하는 이름을 가진 Object 배열 반환 메서드를 파라미터로 사용
+     *  - @Parameters(method="paramsForTestFree")
+     */
+    @Parameters(method="paramsForTestFree")
+    public void testFree(int basePrice, int maxPrice, boolean isFree) throws Exception {
         Event event;
         //Given
         event = Event.builder()
-                .basePrice(0)
-                .maxPrice(0)
+                .basePrice(basePrice)
+                .maxPrice(maxPrice)
                 .build();
 
         //When
         event.update();
 
         //Then
-        assertThat(event.isFree()).isTrue();
+        assertThat(event.isFree()).isEqualTo(isFree);
+    }
 
-        //Given
-        event = Event.builder()
-                .basePrice(100)
-                .maxPrice(0)
-                .build();
-
-        //When
-        event.update();
-
-        //Then
-        assertThat(event.isFree()).isFalse();
-
-        //Given
-        event = Event.builder()
-                .basePrice(0)
-                .maxPrice(100)
-                .build();
-
-        //When
-        event.update();
-
-        //Then
-        assertThat(event.isFree()).isFalse();
-
+    private Object[] paramsForTestFree() {
+        return new Object[] {
+                new Object [] {0, 0, true},
+                new Object [] {100, 0, false},
+                new Object [] {0, 100, false},
+                new Object [] {100, 200, false}
+        };
     }
 
     @Test
-    public void testOffline() {
+    @Parameters
+    public void testOffline(String location, boolean isOffline) {
         Event event;
 
         // Given
         event = Event.builder()
-                .location("삼성 건물")
+                .location(location)
                 .build();
 
         //When
         event.update();
 
         //Then
-        assertThat(event.isOffline()).isFalse();
+        assertThat(event.isOffline()).isEqualTo(isOffline);
 
+    }
 
-        // Given
-        event = Event.builder()
-                .build();
-
-        //When
-        event.update();
-
-        //Then
-        assertThat(event.isOffline()).isTrue();
+    private Object[] parametersForTestOffline() {
+        return new Object[] {
+                new Object[] {"삼성 건물", false},
+                new Object[] {null, true}
+        };
     }
 }

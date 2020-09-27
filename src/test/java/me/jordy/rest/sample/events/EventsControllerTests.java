@@ -199,3 +199,5 @@ public class EventsControllerTests {
         ;
     }
 }
+
+// "[수정] Bad Request 에러 내용 반환 처리 및 이벤트 도메인 비즈니스 로직 추가 & 테스트 로직 추가"
