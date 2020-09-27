@@ -1,0 +1,17 @@
+[source,bash]
+----
+$ echo '{
+  "name" : "죠르디 스프링 특강",
+  "description" : "죠르디가 진행하는 스프링 특강",
+  "beginEnrollmentDateTime" : "2020-09-23T12:23:45",
+  "closeEnrollmentDateTime" : "2020-09-23T14:23:45",
+  "beginEventDateTime" : "2020-10-23T12:23:45",
+  "endEventDateTime" : "2020-10-23T14:23:45",
+  "location" : "서울 스타듀밸리",
+  "basePrice" : 100,
+  "maxPrice" : 200,
+  "limitOfEnrollment" : 20
+}' | http POST 'http://localhost:8080/api/events/' \
+    'Content-Type:application/json;charset=UTF-8' \
+    'Accept:application/hal+json'
+----

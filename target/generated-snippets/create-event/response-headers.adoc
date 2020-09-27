@@ -1,0 +1,10 @@
+|===
+|Name|Description
+
+|`+Location+`
+|Address to read newly created events
+
+|`+Content-Type+`
+|response data`s data type 
+
+|===

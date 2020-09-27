@@ -3,16 +3,19 @@ package me.jordy.rest.sample.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jordy.rest.sample.common.CustomMediaTypes;
+import me.jordy.rest.sample.common.RestDocsConfiguration;
 import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +25,11 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,6 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class) /* 설정 클래스에 설정된 정보를 적용하기 위해 임의로 임포트. 그냥 해서는 적용 안 됨*/
 public class EventsControllerTests {
 
     /**
@@ -101,6 +111,62 @@ public class EventsControllerTests {
 //                .andExpect(jsonPath("_link.profile").exists())
                 .andExpect(jsonPath("_links.query-events").exists())
                 .andExpect(jsonPath("_links.update-event").exists())
+                /* .andDo(document("create-event") 만 있어도 본문(리소스) 코드의 스니펫을 생성해 줌. 헤더와 링크 정보 문서화를 위해 아래와 같은 처리 필요*/
+                .andDo(document("create-event",
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("query-events").description("link to query events"),
+                                linkWithRel("update-event").description("link to update a existing event")
+
+                        ), requestHeaders (
+                                headerWithName(HttpHeaders.ACCEPT).description("accept header"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+
+                        ), requestFields (
+                                fieldWithPath("name").description("Name of new Event"),
+                                fieldWithPath("description").description("description of new Event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of new Event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of new Event"),
+                                fieldWithPath("beginEventDateTime").description("begin event date time of new Event"),
+                                fieldWithPath("endEventDateTime").description("end event date time of new Event"),
+                                fieldWithPath("location").description("location of new Event"),
+                                fieldWithPath("basePrice").description("base price of new Event"),
+                                fieldWithPath("maxPrice").description("max price of new Event"),
+                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of new Event")
+
+                        ), responseHeaders (
+                                headerWithName(HttpHeaders.LOCATION).description("Address to read newly created events"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+
+                        ), responseFields (
+
+                                fieldWithPath("id").description("Identification of Event"),
+                                fieldWithPath("name").description("Name of Event"),
+                                fieldWithPath("description").description("description of Event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                                fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
+                                fieldWithPath("endEventDateTime").description("end event date time of Event"),
+                                fieldWithPath("location").description("location of Event"),
+                                fieldWithPath("basePrice").description("base price of Event"),
+                                fieldWithPath("maxPrice").description("max price of Event"),
+                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
+                                fieldWithPath("free").description("it tells if this event is free or not"),
+                                fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
+                                fieldWithPath("eventStatus").description("status of new Event"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.query-events.href").description("link to query events"),
+                                fieldWithPath("_links.update-event.href").description("link to update a existing event")
+                                /**
+                                 *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
+                                 *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.
+                                 *
+                                 *  다만, relaxedResponseFields 로 할 경우 전체 응답 필드 중 일부가 비어 있어도 알 수가 없어
+                                 *  문서화 데이터에 빠진 데이터가 생길 수가 있을 뿐만 아니라 테스트도 응답 필드에 한해
+                                 *  불안정 해진다는 단점이 있다.
+                                 */
+                        )
+                ));
         ;
     }
 
