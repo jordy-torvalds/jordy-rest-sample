@@ -66,7 +66,6 @@ public class EventController {
 
         EventResource eventResource = new EventResource(newEvent);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
-        eventResource.add(controllerLinkBuilder.withSelfRel());
         eventResource.add(controllerLinkBuilder.withRel("update-event"));
         return ResponseEntity.created(createEventURL).body(eventResource);
 
