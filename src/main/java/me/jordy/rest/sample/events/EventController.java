@@ -1,6 +1,7 @@
 package me.jordy.rest.sample.events;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -31,7 +33,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
+    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) throws URISyntaxException {
 
         if(errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
@@ -67,6 +69,7 @@ public class EventController {
         EventResource eventResource = new EventResource(newEvent);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(controllerLinkBuilder.withRel("update-event"));
+        eventResource.add(new Link("/docs/event.html").withRel("profile"));
         return ResponseEntity.created(createEventURL).body(eventResource);
 
     }

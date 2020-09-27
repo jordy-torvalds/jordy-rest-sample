@@ -107,16 +107,13 @@ public class EventsControllerTests {
                 .andExpect(jsonPath("id").value(Matchers.not(100)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("free").value(Matchers.not(true)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))  /* 값 일치 확인 Matcher 사용*/
-                .andExpect(jsonPath("_links.self").exists())
-//                .andExpect(jsonPath("_link.profile").exists())
-                .andExpect(jsonPath("_links.query-events").exists())
-                .andExpect(jsonPath("_links.update-event").exists())
                 /* .andDo(document("create-event") 만 있어도 본문(리소스) 코드의 스니펫을 생성해 줌. 헤더와 링크 정보 문서화를 위해 아래와 같은 처리 필요*/
                 .andDo(document("create-event",
                         links(
                                 linkWithRel("self").description("link to self"),
                                 linkWithRel("query-events").description("link to query events"),
-                                linkWithRel("update-event").description("link to update a existing event")
+                                linkWithRel("update-event").description("link to update a existing event"),
+                                linkWithRel("profile").description("link to event`s profile docs")
 
                         ), requestHeaders (
                                 headerWithName(HttpHeaders.ACCEPT).description("accept header"),
@@ -156,7 +153,8 @@ public class EventsControllerTests {
                                 fieldWithPath("eventStatus").description("status of new Event"),
                                 fieldWithPath("_links.self.href").description("link to self"),
                                 fieldWithPath("_links.query-events.href").description("link to query events"),
-                                fieldWithPath("_links.update-event.href").description("link to update a existing event")
+                                fieldWithPath("_links.update-event.href").description("link to update a existing event"),
+                                fieldWithPath("_links.profile.href").description("link to event`s profile docs")
                                 /**
                                  *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
                                  *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.

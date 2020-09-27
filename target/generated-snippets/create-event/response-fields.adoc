@@ -69,4 +69,8 @@
 |`+String+`
 |link to update a existing event
 
+|`+_links.profile.href+`
+|`+String+`
+|link to event`s profile docs
+
 |===
