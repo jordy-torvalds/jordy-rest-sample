@@ -63,10 +63,9 @@ public class EventsControllerTests {
 //    EventRepository eventRepository;
 
     @Test
-    @TestDescription("완전한 Event 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
+    @TestDescription("완전한 EventDto 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
     public void createEvent() throws Exception {
-        Event event = Event.builder()
-                .id(100)
+        EventDto event = EventDto.builder()
                 .name("죠르디 스프링 특강")
                 .description("죠르디가 진행하는 스프링 특강")
                 .beginEnrollmentDateTime(LocalDateTime.of(2020,9,23,12,23,45))
@@ -77,9 +76,6 @@ public class EventsControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(20)
                 .location("서울 스타듀밸리")
-                .free(true)
-                .offline(true)
-                .eventStatus(EventStatus.PUBLISHED)
                 .build();
 
         /**
@@ -101,6 +97,10 @@ public class EventsControllerTests {
                 .andExpect(jsonPath("id").value(Matchers.not(100)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("free").value(Matchers.not(true)))  /* 값 일치 확인 Matcher 사용*/
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))  /* 값 일치 확인 Matcher 사용*/
+                .andExpect(jsonPath("_links.self").exists())
+//                .andExpect(jsonPath("_link.profile").exists())
+                .andExpect(jsonPath("_links.query-events").exists())
+                .andExpect(jsonPath("_links.update-event").exists())
         ;
     }
 
@@ -199,5 +199,3 @@ public class EventsControllerTests {
         ;
     }
 }
-
-// "[수정] Bad Request 에러 내용 반환 처리 및 이벤트 도메인 비즈니스 로직 추가 & 테스트 로직 추가"

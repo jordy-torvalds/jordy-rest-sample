@@ -1,22 +1,20 @@
 package me.jordy.rest.sample.events;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URL;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @Controller
 @RequestMapping(value = "/api/events", produces= MediaTypes.HAL_JSON_VALUE+";charset=UTF-8")
@@ -48,18 +46,29 @@ public class EventController {
          */
         if(errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
-        }
+         }
 
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
         Event newEvent = eventRepository.save(event);
 
-        /* 메소드 온 없이 URI를 만드는 것이 가능하기 때문에 쓰지 않고 간결하게 만듬.*/
-        URI createEventURL = linkTo(EventController.class).slash(newEvent.getId()).toUri();
+        // 메소드 명을 써가며 URI를 만들기 보단 아래처럼 하는 것이 나아서 주석처리
         // URI createEventURL = linkTo(methodOn(EventController.class).createEvent(event)).slash("{id}").toUri();
 
-        event.setId(10);
-        return ResponseEntity.created(createEventURL).body(event);
+        /* 메소드 온 없이 URI를 만드는 것이 가능하기 때문에 쓰지 않고 간결하게 만듬.*/
+//        URI createEventURL = linkTo(EventController.class).slash(newEvent.getId()).toUri();
+
+
+
+        /* 지속적인 셀프 링크 사용을 고려해, 위 코드에서 별도의 인스턴스 선언으로 변경.*/
+        ControllerLinkBuilder controllerLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        URI createEventURL = controllerLinkBuilder.toUri();
+
+        EventResource eventResource = new EventResource(newEvent);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(controllerLinkBuilder.withSelfRel());
+        eventResource.add(controllerLinkBuilder.withRel("update-event"));
+        return ResponseEntity.created(createEventURL).body(eventResource);
 
     }
 }
