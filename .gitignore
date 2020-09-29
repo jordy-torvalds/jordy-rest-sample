@@ -1,3 +1,4 @@
-# 불필요한 폴더 제외
+# 불필요한 폴더/파일 제외
 .idea
 target
+baeks-rest-sampe-project.iml

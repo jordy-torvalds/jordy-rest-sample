@@ -1,5 +1,6 @@
 package me.jordy.rest.sample.events;
 
+import me.jordy.rest.sample.common.ErrorResource;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -36,7 +37,7 @@ public class EventController {
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) throws URISyntaxException {
 
         if(errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
         }
 
         eventValidator.validate(eventDto, errors);
@@ -47,7 +48,7 @@ public class EventController {
               해당 데이터를 빈 시리얼라이즈를 해줌.
          */
         if(errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
          }
 
         Event event = modelMapper.map(eventDto, Event.class);
@@ -72,5 +73,9 @@ public class EventController {
         eventResource.add(new Link("/docs/event.html").withRel("profile"));
         return ResponseEntity.created(createEventURL).body(eventResource);
 
+    }
+
+    private ResponseEntity<ErrorResource> badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorResource(errors));
     }
 }
