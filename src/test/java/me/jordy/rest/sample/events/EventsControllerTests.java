@@ -2,19 +2,15 @@ package me.jordy.rest.sample.events;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.jordy.rest.sample.common.CustomMediaTypes;
 import me.jordy.rest.sample.common.RestDocsConfiguration;
 import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -22,9 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
@@ -32,6 +28,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,6 +60,8 @@ public class  EventsControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    EventRepository eventRepository;
 
     /**
      *  @WebMvcTest 가 웹용 빈만 등록을 해주고, 리포지토리를 빈으로 등록 해주지 않음
@@ -264,5 +263,66 @@ public class  EventsControllerTests {
                 .andExpect(jsonPath("content[0].code").exists())
                 .andExpect(jsonPath("_links.index").exists())
         ;
+    }
+
+        @Test
+        @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+        public void queryEvents() throws Exception{
+            // Given
+            IntStream.range(0,30).forEach( i -> {
+                this.generateEvents(i);
+            });
+
+            // When
+            this.mockMvc.perform(get("/api/events")
+                        .param("page","1")
+                        .param("size", "10")
+                        .param("sort","name,DESC")
+                    )
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("page").exists())
+                    .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+                    .andExpect(jsonPath("_links.self").exists())
+                    .andExpect(jsonPath("_links.profile").exists())
+                    .andDo(document("query-events"))
+            ;
+
+    }
+
+    @Test
+    @TestDescription("기존 이벤트 하나 조회하기")
+    public void getEvent() throws Exception {
+        // Given
+        Event event = this.generateEvents(100);
+
+        // When & Then
+        mockMvc.perform(get("/api/events/{id}",event.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").exists())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("get-event"))
+        ;
+    }
+
+    @Test
+    @TestDescription("기존 이벤트 하나 조회하기")
+    public void getEvent404() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/events/{id}",0))
+                .andExpect(status().isNotFound())
+        ;
+    }
+
+    private Event generateEvents(int index) {
+        Event event = Event.builder()
+                .name("event"+index)
+                .description("test event")
+                .build()
+        ;
+        eventRepository.save(event);
+        return event;
     }
 }
