@@ -7,6 +7,7 @@ import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMessage;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -27,8 +30,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -59,6 +61,9 @@ public class  EventsControllerTests {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    ModelMapper modelMapper;
 
     @Autowired
     EventRepository eventRepository;
@@ -308,7 +313,7 @@ public class  EventsControllerTests {
     }
 
     @Test
-    @TestDescription("기존 이벤트 하나 조회하기")
+    @TestDescription("없는 이벤트 데이터 조회하기")
     public void getEvent404() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/events/{id}",0))
@@ -316,13 +321,99 @@ public class  EventsControllerTests {
         ;
     }
 
+    @Test
+    @TestDescription("정상적인 요청으로 이벤트 수정")
+    public void updateEvent() throws Exception {
+        //Given
+        Event event = generateEvents(200);
+
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+        String eventName = "updated event";
+        eventDto.setName(eventName);
+
+        // When & Then
+        mockMvc.perform(put("/api/events/{id}",event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value(eventName))
+                .andExpect(jsonPath("_links.self").exists())
+                .andDo(document("update-event"))
+        ;
+    }
+
+    @Test
+    @TestDescription("이벤트 수정 중 비어있는 데이터로 인해 바인딩 에러 발생")
+    public void updateEventWithEmptyContent() throws Exception {
+        //Given
+        Event event = generateEvents(202);
+
+        EventDto eventDto = new EventDto();
+
+        // When & Then
+        mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+    @Test
+    @TestDescription("이벤트 수정 중 도메인 로직 에러 발생")
+    public void updateEventWithDomainLoginError() throws Exception {
+        //Given
+        Event event = generateEvents(203);
+
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+        eventDto.setBasePrice(100000);
+        eventDto.setMaxPrice(20000);
+
+        // When & Then
+        mockMvc.perform(put("/api/events/{id}",event.getId())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+    @Test
+    @TestDescription("이벤트 수정을 충분하지 않은 권한으로 진행")
+    public void updateEventWithNotEnoughAuth() throws Exception {
+        //Given
+        Event event = generateEvents(204);
+
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+
+        // When & Then
+        mockMvc.perform(put("/api/events/{id}",0)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+        ;
+    }
+
     private Event generateEvents(int index) {
         Event event = Event.builder()
-                .name("event"+index)
-                .description("test event")
+                .id(index)
+                .name("죠르디 스프링 특강 #"+index)
+                .description("죠르디가 진행하는 스프링 특강")
+                .beginEnrollmentDateTime(LocalDateTime.of(2020,9,25,12,23,45))
+                .closeEnrollmentDateTime(LocalDateTime.of(2020,9,26,14,23,45))
+                .beginEventDateTime(LocalDateTime.of(2020,10,27,12,23,45))
+                .endEventDateTime(LocalDateTime.of(2020,10,28,14,23,45))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(20)
+                .location("서울 스타듀밸리")
+                .free(false)
+                .offline(true)
+                .eventStatus(EventStatus.DRAFT)
                 .build()
-        ;
-        eventRepository.save(event);
+                ;
+        event = eventRepository.save(event);
+        System.out.println(event+"############");
         return event;
     }
 }

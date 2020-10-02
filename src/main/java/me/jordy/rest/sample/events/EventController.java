@@ -8,18 +8,16 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
-import javax.xml.ws.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -99,6 +97,44 @@ public class EventController {
         Event event = optionalEvent.get();
         EventResource eventResource = new EventResource((event));
         eventResource.add(new Link("/docs/event.html#resources-events-get").withRel("profile"));
+        return ResponseEntity.ok(eventResource);
+
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updateEvent(@PathVariable Integer id,
+                                      @RequestBody @Valid EventDto eventDto,
+                                      Errors errors) {
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if(!optionalEvent.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if(errors.hasErrors()) {
+            return badRequest(errors);
+        }
+
+        eventValidator.validate(eventDto, errors);
+
+        /*
+            - 이벤트라는 도메인은 자바 빈 스펙을 준수 하고 있어서 Bean을 Json으로 변환하는 것이 가능
+            - body에 뭔가 값을 넣어서 JSON 으로 변환을 하면 Controller 처리 부 내부에 ObjectMapper가 있어서
+              해당 데이터를 빈 시리얼라이즈를 해줌.
+         */
+
+        if(errors.hasErrors()) {
+            return badRequest(errors);
+        }
+
+        Event existingEvent = optionalEvent.get();
+        System.out.println("###changing before : " + existingEvent);
+        modelMapper.map(eventDto, existingEvent);
+        System.out.println("###changing after : " + existingEvent);
+
+        Event updatedEvent = eventRepository.save(existingEvent);
+
+        EventResource eventResource = new EventResource((updatedEvent));
+        eventResource.add(new Link("/docs/event.html#resources-events-update").withRel("profile"));
         return ResponseEntity.ok(eventResource);
 
     }
