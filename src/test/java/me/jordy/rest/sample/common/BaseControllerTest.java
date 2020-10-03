@@ -1,6 +1,9 @@
 package me.jordy.rest.sample.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.jordy.rest.sample.accounts.Account;
+import me.jordy.rest.sample.accounts.AccountRole;
+import me.jordy.rest.sample.accounts.AccountService;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
@@ -8,10 +11,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /* Junit 4 를 기준으로 작성된 테스트 */
 @RunWith(SpringRunner.class)
@@ -43,4 +60,7 @@ public class BaseControllerTest {
 
     @Autowired
     protected ModelMapper modelMapper;
+
+    @Autowired
+    protected AccountService accountService;
 }
