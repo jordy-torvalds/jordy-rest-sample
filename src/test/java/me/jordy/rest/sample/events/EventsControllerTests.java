@@ -1,6 +1,8 @@
 package me.jordy.rest.sample.events;
 
 
+import me.jordy.rest.sample.accounts.Account;
+import me.jordy.rest.sample.accounts.AccountAdapter;
 import me.jordy.rest.sample.accounts.AccountRepository;
 import me.jordy.rest.sample.accounts.AccountService;
 import me.jordy.rest.sample.common.AppProperties;
@@ -12,10 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -29,6 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class  EventsControllerTests extends BaseControllerTest {
+
+    // TODO 권한 여부에 따른 추가적인 링크 정보 처리 추가
+    // TODO SNIPPET 처리
 
     @Autowired
     EventRepository eventRepository;
@@ -133,7 +140,7 @@ public class  EventsControllerTests extends BaseControllerTest {
                                 fieldWithPath("free").description("it tells if this event is free or not"),
                                 fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
                                 fieldWithPath("eventStatus").description("status of new Event"),
-                                fieldWithPath("owner").description("owner of new Event"),
+                                fieldWithPath("owner.id").description("owner id of new Event"),
                                 fieldWithPath("_links.self.href").description("link to self"),
                                 fieldWithPath("_links.query-events.href").description("link to query events"),
                                 fieldWithPath("_links.update-event.href").description("link to update a existing event"),
@@ -308,7 +315,9 @@ public class  EventsControllerTests extends BaseControllerTest {
         Event event = this.generateEvents(100);
 
         // When & Then
-        mockMvc.perform(get("/api/events/{id}",event.getId()))
+        mockMvc.perform(get("/api/events/{id}",event.getId())
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken()))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").exists())
                 .andExpect(jsonPath("id").exists())
@@ -405,6 +414,7 @@ public class  EventsControllerTests extends BaseControllerTest {
         ;
     }
     private Event generateEvents(int index) {
+        Optional<Account> account = accountRepository.findByEmail(appProperties.getAdminUsername());
         Event event = Event.builder()
                 .id(index)
                 .name("죠르디 스프링 특강 #"+index)
@@ -420,6 +430,7 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .free(false)
                 .offline(true)
                 .eventStatus(EventStatus.DRAFT)
+                .owner(account.get())
                 .build()
                 ;
         event = eventRepository.save(event);
@@ -434,11 +445,6 @@ public class  EventsControllerTests extends BaseControllerTest {
     private String getAuthToken() throws Exception {
 
         String grant_type = "password";
-
-//        MultiValueMap<String, String> param = new LinkedMultiValueMap<>();
-//        param.add("email", appProperties.getAdminUsername());
-//        param.add("password", appProperties.getAdminPassword());
-//        param.add("grant_type",grant_type);
 
         ResultActions result = mockMvc.perform(post("/oauth/token")
                     .with(httpBasic(appProperties.getClientId(),appProperties.getClientSecret()))
