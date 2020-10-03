@@ -3,6 +3,7 @@ package me.jordy.rest.sample.configs;
 import me.jordy.rest.sample.accounts.Account;
 import me.jordy.rest.sample.accounts.AccountRole;
 import me.jordy.rest.sample.accounts.AccountService;
+import me.jordy.rest.sample.common.AppProperties;
 import net.bytebuddy.asm.Advice;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +39,28 @@ public class AppConfig {
             @Autowired
             AccountService accountService;
 
+            @Autowired
+            AppProperties appProperties;
+
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Account account = Account.builder()
-                                    .email("jordy@admin.com")
-                                    .password("1234")
-                                    .roles(new HashSet<AccountRole>(Arrays.asList(AccountRole.ADMIN, AccountRole.USER)))
-                                    .build()
+                Account account;
+                account = Account.builder()
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
+                        .roles(new HashSet<AccountRole>(Arrays.asList(AccountRole.ADMIN, AccountRole.USER)))
+                        .build()
                 ;
+
+                accountService.saveAccount(account);
+
+                account = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(new HashSet<AccountRole>(Arrays.asList(AccountRole.USER)))
+                        .build()
+                ;
+
                 accountService.saveAccount(account);
             }
         };

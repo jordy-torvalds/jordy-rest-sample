@@ -5,32 +5,26 @@ import me.jordy.rest.sample.accounts.Account;
 import me.jordy.rest.sample.accounts.AccountRepository;
 import me.jordy.rest.sample.accounts.AccountRole;
 import me.jordy.rest.sample.accounts.AccountService;
+import me.jordy.rest.sample.common.AppProperties;
 import me.jordy.rest.sample.common.BaseControllerTest;
 import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.stream.IntStream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
@@ -52,6 +46,9 @@ public class  EventsControllerTests extends BaseControllerTest {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    AppProperties appProperties;
+
     /**
      *  @WebMvcTest 가 웹용 빈만 등록을 해주고, 리포지토리를 빈으로 등록 해주지 않음
      * 그래서 리포지토리의 모킹이 필요함.
@@ -61,16 +58,6 @@ public class  EventsControllerTests extends BaseControllerTest {
      */
 //    @MockBean
 //    EventRepository eventRepository;
-
-
-    /**
-     * AuthToken 발급간 중복된 아이디로 문제가 있어 매 테스트 시작전 데이터를 비움
-     */
-    @Before
-    public void setUp() {
-        eventRepository.deleteAll();;
-        accountRepository.deleteAll();;
-    }
 
 
     @Test
@@ -426,35 +413,21 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     private String getAuthToken() throws Exception {
-        String email = "scappy-cook@kakao.com";
-        String password = "1234";
+
         String grant_type = "password";
 
-        Account account = Account.builder()
-                .email(email)
-                .password(password)
-                .roles(new HashSet<AccountRole>(Arrays.asList(AccountRole.USER)))
-                .build()
-        ;
-        accountService.saveAccount(account);
-
 //        MultiValueMap<String, String> param = new LinkedMultiValueMap<>();
-//        param.add("email", email);
-//        param.add("password", password);
-//        param.add("grant_type","password");
-
-        String clientId = "myApp";
-        String clientSecret = "pass";
+//        param.add("email", appProperties.getAdminUsername());
+//        param.add("password", appProperties.getAdminPassword());
+//        param.add("grant_type",grant_type);
 
         ResultActions result = mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId,clientSecret))
-                .param("grant_type", grant_type)
-                .param("username", email)
-                .param("password", password)
+                    .with(httpBasic(appProperties.getClientId(),appProperties.getClientSecret()))
+                    .param("grant_type", grant_type)
+                    .param("username", appProperties.getAdminUsername())
+                    .param("password", appProperties.getAdminPassword())
                 )
             .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("access_token").exists())
         ;
         String resultString = result.andReturn().getResponse().getContentAsString();
         Jackson2JsonParser parser = new Jackson2JsonParser();
