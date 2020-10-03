@@ -1,6 +1,7 @@
 package me.jordy.rest.sample.events;
 
 import lombok.*;
+import me.jordy.rest.sample.accounts.Account;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -28,6 +29,9 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+
+    @ManyToOne
+    private Account owner;
 
     public void update() {
         if(basePrice == 0  && maxPrice == 0) {
