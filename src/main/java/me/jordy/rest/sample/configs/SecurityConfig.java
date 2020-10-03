@@ -33,14 +33,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+
+    /**
+     * Auth Server 설정시 사용되는 토큰 스토어
+     */
     @Bean
-    public TokenStore tokenStore (){
+    public TokenStore tokenStore(){
         return new InMemoryTokenStore();
     }
 
     /**
-     * 다른 AuthorizationServer나 ResourceServer가 참조할 수 있도록
-     * Bean 으로 등록!
+     * 이 빈은 유저 정보를 가지고 있는 빈.
+     * 다른 AuthorizationServer나 ResourceServer가 참조할 수 있도록 등록!
      */
     @Bean
     @Override
@@ -71,6 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
+     * @since 2020-10-02
      * WebSecurity 다음이 HttpSecurity .
      * HttpSecurity 로 왔다는 것은 스프링 시큐리티 안으로 온 것.
      * WebSecurity의 필터에 걸러지지 않았기 때문에 여기서 필터체인을 타게 되어 있음.
@@ -79,23 +84,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * 서버의 불필요한 부화를 최소화 할 수 있음.
      * 결론적으로, 정적인 리소스는 WebSecurity 로 처리하는 것이 나음
      */
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        /* 정적인 리소스를 HttpSecurity로 처리 했을 때의 코드. 쓰지 않으므로 주석 처리.*/
-//        http.authorizeRequests()
-//                .mvcMatchers("/docs/event.html").anonymous()
-//                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).anonymous()
+    /**
+     * @since 2020-10-03
+     * 리소스 서버 설정에서 비슷한 설정을 할 예정이므로 통째로 주석 처리!
+     */
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        /* 정적인 리소스를 HttpSecurity로 처리 했을 때의 코드. 쓰지 않으므로 주석 처리.*/
+////        http.authorizeRequests()
+////                .mvcMatchers("/docs/event.html").anonymous()
+////                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).anonymous()
+////        ;
+//
+//        http
+//            .anonymous() // 익명 사용자 가능
+//                .and()
+//            .formLogin() // 폼 로그인 사용. 페이지 변경도 가능
+//                .and()
+//            .authorizeRequests()
+////                .mvcMatchers(HttpMethod.GET, "/api/**").anonymous() // GET 메소드, /api/** 요청은 익명 가능
+//                .mvcMatchers(HttpMethod.GET, "/api/**").authenticated() // GET 메소드, /api/** 요청은 익명 가능
+//                .anyRequest().authenticated()   // 그 외는 인증 필요
 //        ;
-
-        http
-            .anonymous() // 익명 사용자 가능
-                .and()
-            .formLogin() // 폼 로그인 사용. 페이지 변경도 가능
-                .and()
-            .authorizeRequests()
-//                .mvcMatchers(HttpMethod.GET, "/api/**").anonymous() // GET 메소드, /api/** 요청은 익명 가능
-                .mvcMatchers(HttpMethod.GET, "/api/**").authenticated() // GET 메소드, /api/** 요청은 익명 가능
-                .anyRequest().authenticated()   // 그 외는 인증 필요
-        ;
-    }
+//    }
 }
