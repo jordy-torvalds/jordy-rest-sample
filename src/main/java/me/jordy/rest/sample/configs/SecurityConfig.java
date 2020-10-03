@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -85,5 +86,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .mvcMatchers("/docs/event.html").anonymous()
 //                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).anonymous()
 //        ;
+
+        http
+            .anonymous() // 익명 사용자 가능
+                .and()
+            .formLogin() // 폼 로그인 사용. 페이지 변경도 가능
+                .and()
+            .authorizeRequests()
+//                .mvcMatchers(HttpMethod.GET, "/api/**").anonymous() // GET 메소드, /api/** 요청은 익명 가능
+                .mvcMatchers(HttpMethod.GET, "/api/**").authenticated() // GET 메소드, /api/** 요청은 익명 가능
+                .anyRequest().authenticated()   // 그 외는 인증 필요
+        ;
     }
 }
