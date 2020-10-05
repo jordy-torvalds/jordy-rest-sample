@@ -277,7 +277,55 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.profile").exists())
-                .andDo(document("query-events"))
+                .andDo(document("query-events",
+                    links(
+                            linkWithRel("self").description("link to self"),
+                            linkWithRel("profile").description("link to event`s profile docs")
+
+                    ), requestHeaders (
+                            headerWithName(HttpHeaders.ACCEPT).description("accept header"),
+                            headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+
+                    ), requestFields (
+                            fieldWithPath("page").description("page number"),
+                            fieldWithPath("size").description("page size"),
+                            fieldWithPath("sort").description("begin sort")
+
+                    ), responseHeaders (
+                            headerWithName(HttpHeaders.LOCATION).description("Address to read newly created events"),
+                            headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+
+                    ), responseFields (
+
+                            fieldWithPath("id").description("Identification of Event"),
+                            fieldWithPath("name").description("Name of Event"),
+                            fieldWithPath("description").description("description of Event"),
+                            fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                            fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                            fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
+                            fieldWithPath("endEventDateTime").description("end event date time of Event"),
+                            fieldWithPath("location").description("location of Event"),
+                            fieldWithPath("basePrice").description("base price of Event"),
+                            fieldWithPath("maxPrice").description("max price of Event"),
+                            fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
+                            fieldWithPath("free").description("it tells if this event is free or not"),
+                            fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
+                            fieldWithPath("eventStatus").description("status of new Event"),
+                            fieldWithPath("owner.id").description("owner id of new Event"),
+                            fieldWithPath("_links.self.href").description("link to self"),
+                            fieldWithPath("_links.query-events.href").description("link to query events"),
+                            fieldWithPath("_links.update-event.href").description("link to update a existing event"),
+                            fieldWithPath("_links.profile.href").description("link to event`s profile docs")
+                            /**
+                             *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
+                             *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.
+                             *
+                             *  다만, relaxedResponseFields 로 할 경우 전체 응답 필드 중 일부가 비어 있어도 알 수가 없어
+                             *  문서화 데이터에 빠진 데이터가 생길 수가 있을 뿐만 아니라 테스트도 응답 필드에 한해
+                             *  불안정 해진다는 단점이 있다.
+                             */
+                    )
+                ))
         ;
 
     }
