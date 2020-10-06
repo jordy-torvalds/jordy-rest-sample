@@ -1,34 +1,29 @@
 package me.jordy.rest.sample.accounts;
 
-import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import me.jordy.rest.sample.common.BaseTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.useDefaultDateFormatsOnly;
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@ActiveProfiles("test")
-public class AccountServiceTest {
+public class AccountServiceTest extends BaseTest {
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    /**
+     * Junit 5 버전 업으로 주석처리,
+     * @Rule 어노태이션 삭제됨
+     */
+//    @Rule
+//    public ExpectedException expectedException = ExpectedException.none();
 
     @Autowired
     AccountService accountService;
@@ -56,11 +51,15 @@ public class AccountServiceTest {
         assertThat(passwordEncoder.matches(password,account.getPassword())).isTrue();
     }
 
+    /* JUnit 5 버전업으로 주석처리*/
+    /*
     @Test(expected = UsernameNotFoundException.class)
     public void findByUsernameFailBasedTestAnnotation() {
         String email ="!@#$%^&&*()QWERTYUIO@QWE.com";
         accountService.loadUserByUsername(email);
     }
+
+    */
 
     @Test
     public void findByUsernameFailBasedTryCatch() {
@@ -78,12 +77,17 @@ public class AccountServiceTest {
         // Expected
         /* 예상되는 예외와 메시지는 항상 When 절 보다 앞에 있어야 함*/
         String email ="!@#$%^&&*()QWERTYUIO@QWE.com";
-        expectedException.expect(UsernameNotFoundException.class);
-        expectedException.expectMessage(Matchers.containsString(email));
+
+        /**
+         * Junit 5 버전 업으로 주석처리,
+         * @Rule 어노태이션 삭제됨
+         */
+//        expectedException.expect(UsernameNotFoundException.class);
+//        expectedException.expectMessage(Matchers.containsString(email));
 
         // When
-        accountService.loadUserByUsername(email);
+        assertThrows(UsernameNotFoundException.class, ()->{
+            accountService.loadUserByUsername(email);
+        });
     }
-
-
 }

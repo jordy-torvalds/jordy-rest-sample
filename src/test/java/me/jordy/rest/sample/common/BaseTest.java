@@ -1,37 +1,25 @@
 package me.jordy.rest.sample.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.jordy.rest.sample.accounts.Account;
-import me.jordy.rest.sample.accounts.AccountRole;
 import me.jordy.rest.sample.accounts.AccountService;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.util.Arrays;
-import java.util.HashSet;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /* Junit 4 를 기준으로 작성된 테스트 */
-@RunWith(SpringRunner.class)
+/* Junit 5 버전 업으로 주석처리 */
+//@RunWith(SpringRunner.class)
+
+
 /**
  * @WebMvcTest는 컨트롤러 레이어에 슬라이싱 테스트를 적용하는 어노태이션.
  * 그래서  Repository는 빈 등록이 되지 않음.
@@ -44,8 +32,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs
 @Import(RestDocsConfiguration.class) /* 설정 클래스에 설정된 정보를 적용하기 위해 임의로 임포트. 그냥 해서는 적용 안 됨*/
 @ActiveProfiles("test")
-@Ignore
-public class BaseControllerTest {
+
+/* Junit 5 버전 업으로 @Ignore 에서 변경됨 */
+@Disabled
+public class BaseTest {
 
     /**
      * - 웹 서버를 띄우지 않고도 스프링 MVC (DispatcherServlet) 가 요청을 처리하는 과정을 확인할 수 있어

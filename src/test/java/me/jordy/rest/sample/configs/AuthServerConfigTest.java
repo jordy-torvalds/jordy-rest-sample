@@ -1,16 +1,11 @@
 package me.jordy.rest.sample.configs;
 
-import me.jordy.rest.sample.accounts.Account;
-import me.jordy.rest.sample.accounts.AccountRole;
 import me.jordy.rest.sample.accounts.AccountService;
 import me.jordy.rest.sample.common.AppProperties;
-import me.jordy.rest.sample.common.BaseControllerTest;
+import me.jordy.rest.sample.common.BaseTest;
 import me.jordy.rest.sample.common.TestDescription;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Arrays;
-import java.util.HashSet;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * 일종의 컨트롤러 테스트 이므로 BaseControllerTest를 상속 받음.
  */
-public class AuthServerConfigTest extends BaseControllerTest {
+public class AuthServerConfigTest extends BaseTest {
 
     @Autowired
     AccountService accountService;

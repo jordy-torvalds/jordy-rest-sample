@@ -1,9 +1,7 @@
 package me.jordy.rest.sample.events;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
 
 /**
@@ -12,7 +10,7 @@ import org.springframework.hateoas.ResourceSupport;
  * 안 쓰고도 감싸지는 것을 방지하기 위한 방법은 아래 클래스를 참조
  *  EventResource
  */
-public class EventResourceSupport extends ResourceSupport {
+public class EventRepresentationModel extends RepresentationModel {
 
     /**
      * - 어노태이션 적용 전
@@ -23,7 +21,7 @@ public class EventResourceSupport extends ResourceSupport {
     @JsonUnwrapped
     private Event event;
 
-    public EventResourceSupport(Event event) {
+    public EventRepresentationModel(Event event) {
         this.event = event;
     }
 

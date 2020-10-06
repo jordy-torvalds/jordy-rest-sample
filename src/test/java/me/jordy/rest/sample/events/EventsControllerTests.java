@@ -2,19 +2,18 @@ package me.jordy.rest.sample.events;
 
 
 import me.jordy.rest.sample.accounts.Account;
-import me.jordy.rest.sample.accounts.AccountAdapter;
 import me.jordy.rest.sample.accounts.AccountRepository;
 import me.jordy.rest.sample.accounts.AccountService;
 import me.jordy.rest.sample.common.AppProperties;
-import me.jordy.rest.sample.common.BaseControllerTest;
+import me.jordy.rest.sample.common.BaseTest;
 import me.jordy.rest.sample.common.TestDescription;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class  EventsControllerTests extends BaseControllerTest {
+public class  EventsControllerTests extends BaseTest {
 
     @Autowired
     EventRepository eventRepository;
@@ -60,7 +59,8 @@ public class  EventsControllerTests extends BaseControllerTest {
 
 
     @Test
-    @TestDescription("완전한 EventDto 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
+    //@TestDescription("완전한 EventDto 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
+    @DisplayName("완전한 EventDto 데이터를 삽입했을 때 정상적으로 처리 되는지 확인하는 테스트")
     public void createEvent() throws Exception {
         EventDto event = EventDto.builder()
                 .name("죠르디 스프링 특강")
@@ -163,7 +163,8 @@ public class  EventsControllerTests extends BaseControllerTest {
      * @throws Exception
      */
     @Test
-    @TestDescription("알 수 없는 필드가 같이 들어왔을 때 Bad Request가 떨어지는 지 확인하는 테스트")
+//    @TestDescription("알 수 없는 필드가 같이 들어왔을 때 Bad Request가 떨어지는 지 확인하는 테스트")
+    @DisplayName("알 수 없는 필드가 같이 들어왔을 때 Bad Request가 떨어지는 지 확인하는 테스트")
     public void createEvent_BadRequest() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -201,7 +202,8 @@ public class  EventsControllerTests extends BaseControllerTest {
      * @throws Exception
      */
     @Test
-    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request 가 나는지 확인하는 테스트")
+//    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request 가 나는지 확인하는 테스트")
+    @DisplayName("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request 가 나는지 확인하는 테스트")
     public void createEvent_BadRequest_EmptyInput() throws Exception {
         EventDto event = EventDto.builder()
                 .build();
@@ -224,7 +226,8 @@ public class  EventsControllerTests extends BaseControllerTest {
      * @throws Exception
      */
     @Test
-    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
+//    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
+    @DisplayName("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
     public void createEvent_BadRequest_WrongInput() throws Exception {
         EventDto event = EventDto.builder()
                 .name("죠르디 스프링 특강")
@@ -289,7 +292,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+//    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+    @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
     public void queryEvents() throws Exception{
         // Given
         IntStream.range(0,30).forEach( i -> {
@@ -364,7 +368,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+//    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+    @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
     public void queryEventsWithAuthentication() throws Exception{
         // Given
         IntStream.range(0,30).forEach( i -> {
@@ -392,7 +397,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("기존 이벤트 하나 조회하기")
+//    @TestDescription("기존 이벤트 하나 조회하기")
+    @DisplayName("기존 이벤트 하나 조회하기")
     public void getEvent() throws Exception {
         // Given
         Event event = this.generateEvents(100);
@@ -443,7 +449,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("없는 이벤트 데이터 조회하기")
+//    @TestDescription("없는 이벤트 데이터 조회하기")
+    @DisplayName("없는 이벤트 데이터 조회하기")
     public void getEvent404() throws Exception {
         // When & Then
         mockMvc.perform(get("/api/events/{id}",0))
@@ -452,7 +459,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("정상적인 요청으로 이벤트 수정")
+//    @TestDescription("정상적인 요청으로 이벤트 수정")
+    @DisplayName("정상적인 요청으로 이벤트 수정")
     public void updateEvent() throws Exception {
         //Given
         Event event = generateEvents(200);
@@ -520,7 +528,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("이벤트 수정 중 비어있는 데이터로 인해 바인딩 에러 발생")
+//    @TestDescription("이벤트 수정 중 비어있는 데이터로 인해 바인딩 에러 발생")
+    @DisplayName("이벤트 수정 중 비어있는 데이터로 인해 바인딩 에러 발생")
     public void updateEventWithEmptyContent() throws Exception {
         //Given
         Event event = generateEvents(202);
@@ -537,7 +546,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("이벤트 수정 중 도메인 로직 에러 발생")
+//    @TestDescription("이벤트 수정 중 도메인 로직 에러 발생")
+    @DisplayName("이벤트 수정 중 도메인 로직 에러 발생")
     public void updateEventWithDomainLoginError() throws Exception {
         //Given
         Event event = generateEvents(203);
@@ -557,7 +567,8 @@ public class  EventsControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @TestDescription("이벤트 수정을 충분하지 않은 권한으로 진행")
+//    @TestDescription("이벤트 수정을 충분하지 않은 권한으로 진행")
+    @DisplayName("이벤트 수정을 충분하지 않은 권한으로 진행")
     public void updateEventWithNotEnoughAuth() throws Exception {
         //Given
         Event event = generateEvents(204);

@@ -1,34 +1,28 @@
 package me.jordy.rest.sample.events;
 
 import me.jordy.rest.sample.accounts.Account;
-import me.jordy.rest.sample.accounts.AccountAdapter;
 import me.jordy.rest.sample.accounts.CurrentUser;
-import me.jordy.rest.sample.common.ErrorResource;
+import me.jordy.rest.sample.common.ErrorEntityModel;
 import me.jordy.rest.sample.index.IndexController;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Controller
 @RequestMapping(value = "/api/events", produces= MediaTypes.HAL_JSON_VALUE+";charset=UTF-8")
@@ -77,14 +71,14 @@ public class EventController {
 
 
         /* 지속적인 셀프 링크 사용을 고려해, 위 코드에서 별도의 인스턴스 선언으로 변경.*/
-        ControllerLinkBuilder controllerLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
-        URI createEventURL = controllerLinkBuilder.toUri();
+        WebMvcLinkBuilder webMvcLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        URI createEventURL = webMvcLinkBuilder.toUri();
 
-        EventResource eventResource = new EventResource(newEvent);
-        eventResource.add(linkTo(EventController.class).withRel("query-events"));
-        eventResource.add(controllerLinkBuilder.withRel("update-event"));
-        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-create").withRel("profile"));
-        return ResponseEntity.created(createEventURL).body(eventResource);
+        EventEntityModel eventEntityModel = new EventEntityModel(newEvent);
+        eventEntityModel.add(linkTo(EventController.class).withRel("query-events"));
+        eventEntityModel.add(webMvcLinkBuilder.withRel("update-event"));
+        eventEntityModel.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-create").withRel("profile"));
+        return ResponseEntity.created(createEventURL).body(eventEntityModel);
 
     }
 
@@ -95,7 +89,7 @@ public class EventController {
                                     , @CurrentUser Account currentUser) {
 
         Page<Event> page = eventRepository.findAll(pageable);
-        PagedResources pagedResource= assembler.toResource(page, e->new EventResource((Event) e));
+        PagedModel pagedResource= assembler.toModel(page, e->new EventEntityModel((Event) e));
         pagedResource.add(linkTo(IndexController.class).slash("docs/event.html#resources-events-list").withRel("profile"));
 
         if (currentUser != null) {
@@ -113,11 +107,11 @@ public class EventController {
             return ResponseEntity.notFound().build();
 
         Event event = optionalEvent.get();
-        EventResource eventResource = new EventResource((event));
-        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-get").withRel("profile"));
+        EventEntityModel eventEntityModel = new EventEntityModel((event));
+        eventEntityModel.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-get").withRel("profile"));
         if(event.getOwner().equals(currentUser))
-            eventResource.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
-        return ResponseEntity.ok(eventResource);
+            eventEntityModel.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
+        return ResponseEntity.ok(eventEntityModel);
 
     }
 
@@ -155,14 +149,14 @@ public class EventController {
 
         Event updatedEvent = eventRepository.save(existingEvent);
 
-        EventResource eventResource = new EventResource((updatedEvent));
-        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-update").withRel("profile"));
-        return ResponseEntity.ok(eventResource);
+        EventEntityModel eventEntityModel = new EventEntityModel((updatedEvent));
+        eventEntityModel.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-update").withRel("profile"));
+        return ResponseEntity.ok(eventEntityModel);
 
     }
 
-    private ResponseEntity<ErrorResource> badRequest(Errors errors) {
-        return ResponseEntity.badRequest().body(new ErrorResource(errors));
+    private ResponseEntity<ErrorEntityModel> badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorEntityModel(errors));
     }
 
 
