@@ -4,6 +4,7 @@ import me.jordy.rest.sample.accounts.Account;
 import me.jordy.rest.sample.accounts.AccountAdapter;
 import me.jordy.rest.sample.accounts.CurrentUser;
 import me.jordy.rest.sample.common.ErrorResource;
+import me.jordy.rest.sample.index.IndexController;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,7 +83,7 @@ public class EventController {
         EventResource eventResource = new EventResource(newEvent);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(controllerLinkBuilder.withRel("update-event"));
-        eventResource.add(new Link("/docs/event.html#resources-events-create").withRel("profile"));
+        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-create").withRel("profile"));
         return ResponseEntity.created(createEventURL).body(eventResource);
 
     }
@@ -95,7 +96,7 @@ public class EventController {
 
         Page<Event> page = eventRepository.findAll(pageable);
         PagedResources pagedResource= assembler.toResource(page, e->new EventResource((Event) e));
-        pagedResource.add(new Link("/docs/event.html#resources-events-list").withRel("profile"));
+        pagedResource.add(linkTo(IndexController.class).slash("docs/event.html#resources-events-list").withRel("profile"));
 
         if (currentUser != null) {
             pagedResource.add(linkTo(EventController.class).withRel("create-event"));
@@ -113,7 +114,7 @@ public class EventController {
 
         Event event = optionalEvent.get();
         EventResource eventResource = new EventResource((event));
-        eventResource.add(new Link("/docs/event.html#resources-events-get").withRel("profile"));
+        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-get").withRel("profile"));
         if(event.getOwner().equals(currentUser))
             eventResource.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
         return ResponseEntity.ok(eventResource);
@@ -155,7 +156,7 @@ public class EventController {
         Event updatedEvent = eventRepository.save(existingEvent);
 
         EventResource eventResource = new EventResource((updatedEvent));
-        eventResource.add(new Link("/docs/event.html#resources-events-update").withRel("profile"));
+        eventResource.add(linkTo(IndexController.class).slash("/docs/event.html#resources-events-update").withRel("profile"));
         return ResponseEntity.ok(eventResource);
 
     }

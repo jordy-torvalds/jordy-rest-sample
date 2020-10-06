@@ -27,15 +27,14 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class  EventsControllerTests extends BaseControllerTest {
-
-    // TODO 권한 여부에 따른 추가적인 링크 정보 처리 추가
-    // TODO SNIPPET 처리
 
     @Autowired
     EventRepository eventRepository;
@@ -98,62 +97,61 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))  /* 값 일치 확인 Matcher 사용*/
                 /* .andDo(document("create-event") 만 있어도 본문(리소스) 코드의 스니펫을 생성해 줌. 헤더와 링크 정보 문서화를 위해 아래와 같은 처리 필요*/
                 .andDo(document("create-event",
-                        links(
-                                linkWithRel("self").description("link to self"),
-                                linkWithRel("query-events").description("link to query events"),
-                                linkWithRel("update-event").description("link to update a existing event"),
-                                linkWithRel("profile").description("link to event`s profile docs")
+                    links(
+                        linkWithRel("self").description("link to self"),
+                        linkWithRel("query-events").description("link to query events"),
+                        linkWithRel("update-event").description("link to update a existing event"),
+                        linkWithRel("profile").description("link to event`s profile docs")
 
-                        ), requestHeaders (
-                                headerWithName(HttpHeaders.ACCEPT).description("accept header"),
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                    ), requestHeaders (
+                        headerWithName(HttpHeaders.ACCEPT).description("accept header"),
+                        headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
 
-                        ), requestFields (
-                                fieldWithPath("name").description("Name of new Event"),
-                                fieldWithPath("description").description("description of new Event"),
-                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of new Event"),
-                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of new Event"),
-                                fieldWithPath("beginEventDateTime").description("begin event date time of new Event"),
-                                fieldWithPath("endEventDateTime").description("end event date time of new Event"),
-                                fieldWithPath("location").description("location of new Event"),
-                                fieldWithPath("basePrice").description("base price of new Event"),
-                                fieldWithPath("maxPrice").description("max price of new Event"),
-                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of new Event")
+                    ), requestFields (
+                        fieldWithPath("name").description("Name of new Event"),
+                        fieldWithPath("description").description("description of new Event"),
+                        fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of new Event"),
+                        fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of new Event"),
+                        fieldWithPath("beginEventDateTime").description("begin event date time of new Event"),
+                        fieldWithPath("endEventDateTime").description("end event date time of new Event"),
+                        fieldWithPath("location").description("location of new Event"),
+                        fieldWithPath("basePrice").description("base price of new Event"),
+                        fieldWithPath("maxPrice").description("max price of new Event"),
+                        fieldWithPath("limitOfEnrollment").description("limit of enrollment of new Event")
 
-                        ), responseHeaders (
-                                headerWithName(HttpHeaders.LOCATION).description("Address to read newly created events"),
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+                    ), responseHeaders (
+                        headerWithName(HttpHeaders.LOCATION).description("Address to read newly created events"),
+                        headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
 
-                        ), responseFields (
-
-                                fieldWithPath("id").description("Identification of Event"),
-                                fieldWithPath("name").description("Name of Event"),
-                                fieldWithPath("description").description("description of Event"),
-                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
-                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
-                                fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
-                                fieldWithPath("endEventDateTime").description("end event date time of Event"),
-                                fieldWithPath("location").description("location of Event"),
-                                fieldWithPath("basePrice").description("base price of Event"),
-                                fieldWithPath("maxPrice").description("max price of Event"),
-                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
-                                fieldWithPath("free").description("it tells if this event is free or not"),
-                                fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
-                                fieldWithPath("eventStatus").description("status of new Event"),
-                                fieldWithPath("owner.id").description("owner id of new Event"),
-                                fieldWithPath("_links.self.href").description("link to self"),
-                                fieldWithPath("_links.query-events.href").description("link to query events"),
-                                fieldWithPath("_links.update-event.href").description("link to update a existing event"),
-                                fieldWithPath("_links.profile.href").description("link to event`s profile docs")
-                                /**
-                                 *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
-                                 *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.
-                                 *
-                                 *  다만, relaxedResponseFields 로 할 경우 전체 응답 필드 중 일부가 비어 있어도 알 수가 없어
-                                 *  문서화 데이터에 빠진 데이터가 생길 수가 있을 뿐만 아니라 테스트도 응답 필드에 한해
-                                 *  불안정 해진다는 단점이 있다.
-                                 */
-                        )
+                    ), responseFields (
+                        fieldWithPath("id").description("Identification of Event"),
+                        fieldWithPath("name").description("Name of Event"),
+                        fieldWithPath("description").description("description of Event"),
+                        fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                        fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                        fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
+                        fieldWithPath("endEventDateTime").description("end event date time of Event"),
+                        fieldWithPath("location").description("location of Event"),
+                        fieldWithPath("basePrice").description("base price of Event"),
+                        fieldWithPath("maxPrice").description("max price of Event"),
+                        fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
+                        fieldWithPath("free").description("it tells if this event is free or not"),
+                        fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
+                        fieldWithPath("eventStatus").description("status of new Event"),
+                        fieldWithPath("owner.id").description("owner id of new Event"),
+                        fieldWithPath("_links.self.href").description("link to self"),
+                        fieldWithPath("_links.query-events.href").description("link to query events"),
+                        fieldWithPath("_links.update-event.href").description("link to update a existing event"),
+                        fieldWithPath("_links.profile.href").description("link to event`s profile docs")
+                        /**
+                         *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
+                         *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.
+                         *
+                         *  다만, relaxedResponseFields 로 할 경우 전체 응답 필드 중 일부가 비어 있어도 알 수가 없어
+                         *  문서화 데이터에 빠진 데이터가 생길 수가 있을 뿐만 아니라 테스트도 응답 필드에 한해
+                         *  불안정 해진다는 단점이 있다.
+                         */
+                    )
                 ));
         ;
     }
@@ -203,17 +201,16 @@ public class  EventsControllerTests extends BaseControllerTest {
      * @throws Exception
      */
     @Test
-    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request가 나는지 확인하는 테스트")
+    @TestDescription("들어오는 Input Parameter에 유효하지 않는 데이터를 넣어 주었을 때 Bad Request 가 나는지 확인하는 테스트")
     public void createEvent_BadRequest_EmptyInput() throws Exception {
         EventDto event = EventDto.builder()
                 .build();
 
         mockMvc.perform(post("/api/events/")
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken())
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaTypes.HAL_JSON)
-                    .content(objectMapper.writeValueAsString(event)))
-
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
         ;
@@ -243,17 +240,51 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/events/")
-                    .header(HttpHeaders.AUTHORIZATION, getBearerToken())
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .accept(MediaTypes.HAL_JSON)
-                    .content(objectMapper.writeValueAsString(event)))
-
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                .accept(MediaTypes.HAL_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(event)
+                ))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("content[0].objectName").exists())
                 .andExpect(jsonPath("content[0].defaultMessage").exists())
                 .andExpect(jsonPath("content[0].code").exists())
                 .andExpect(jsonPath("_links.index").exists())
+                .andDo(document("errors" ,
+                    links(
+                        linkWithRel("index").description("link to index")
+                    ),
+                    requestHeaders (
+                        headerWithName(HttpHeaders.AUTHORIZATION).description("authorization header"),
+                        headerWithName(HttpHeaders.ACCEPT).description("accept header"),
+                        headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+
+                    ), requestFields (
+                        fieldWithPath("name").description("Name of new Event"),
+                        fieldWithPath("description").description("description of new Event"),
+                        fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of new Event"),
+                        fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of new Event"),
+                        fieldWithPath("beginEventDateTime").description("begin event date time of new Event"),
+                        fieldWithPath("endEventDateTime").description("end event date time of new Event"),
+                        fieldWithPath("location").description("location of new Event"),
+                        fieldWithPath("basePrice").description("base price of new Event"),
+                        fieldWithPath("maxPrice").description("max price of new Event"),
+                        fieldWithPath("limitOfEnrollment").description("limit of enrollment of new Event")
+
+                    ), responseHeaders (
+                        headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+
+                    ), responseFields (
+                        fieldWithPath("content[0].field").description("Field name with error"),
+                        fieldWithPath("content[0].objectName").description("Object name with error"),
+                        fieldWithPath("content[0].code").description("Error Code"),
+                        fieldWithPath("content[0].defaultMessage").description("Default Error message"),
+                        fieldWithPath("content[0].rejectedValue").description("The value at which the error occurred"),
+                        fieldWithPath("_links.index.href").description("link to index")
+
+                    )
+                ))
         ;
     }
 
@@ -267,6 +298,8 @@ public class  EventsControllerTests extends BaseControllerTest {
 
         // When
         this.mockMvc.perform(get("/api/events")
+                    .contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaTypes.HAL_JSON)
                     .param("page","1")
                     .param("size", "10")
                     .param("sort","name,DESC")
@@ -279,51 +312,51 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .andExpect(jsonPath("_links.profile").exists())
                 .andDo(document("query-events",
                     links(
+                            linkWithRel("first").description("link to first event page"),
+                            linkWithRel("prev").description("link to prev event page"),
                             linkWithRel("self").description("link to self"),
+                            linkWithRel("next").description("link to next event page"),
+                            linkWithRel("last").description("link to last event page"),
                             linkWithRel("profile").description("link to event`s profile docs")
 
                     ), requestHeaders (
                             headerWithName(HttpHeaders.ACCEPT).description("accept header"),
                             headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
 
-                    ), requestFields (
-                            fieldWithPath("page").description("page number"),
-                            fieldWithPath("size").description("page size"),
-                            fieldWithPath("sort").description("begin sort")
-
+                    ), requestParameters (
+                            parameterWithName("page").description("page number"),
+                            parameterWithName("size").description("page size"),
+                            parameterWithName("sort").description("begin sort")
                     ), responseHeaders (
-                            headerWithName(HttpHeaders.LOCATION).description("Address to read newly created events"),
                             headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
 
                     ), responseFields (
-
-                            fieldWithPath("id").description("Identification of Event"),
-                            fieldWithPath("name").description("Name of Event"),
-                            fieldWithPath("description").description("description of Event"),
-                            fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
-                            fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
-                            fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
-                            fieldWithPath("endEventDateTime").description("end event date time of Event"),
-                            fieldWithPath("location").description("location of Event"),
-                            fieldWithPath("basePrice").description("base price of Event"),
-                            fieldWithPath("maxPrice").description("max price of Event"),
-                            fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
-                            fieldWithPath("free").description("it tells if this event is free or not"),
-                            fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
-                            fieldWithPath("eventStatus").description("status of new Event"),
-                            fieldWithPath("owner.id").description("owner id of new Event"),
+                            fieldWithPath("_embedded.eventList[0].id").description("Identification of Event"),
+                            fieldWithPath("_embedded.eventList[0].name").description("Name of Event"),
+                            fieldWithPath("_embedded.eventList[0].description").description("description of Event"),
+                            fieldWithPath("_embedded.eventList[0].beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                            fieldWithPath("_embedded.eventList[0].closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                            fieldWithPath("_embedded.eventList[0].beginEventDateTime").description("begin event date time of Event"),
+                            fieldWithPath("_embedded.eventList[0].endEventDateTime").description("end event date time of Event"),
+                            fieldWithPath("_embedded.eventList[0].location").description("location of Event"),
+                            fieldWithPath("_embedded.eventList[0].basePrice").description("base price of Event"),
+                            fieldWithPath("_embedded.eventList[0].maxPrice").description("max price of Event"),
+                            fieldWithPath("_embedded.eventList[0].limitOfEnrollment").description("limit of enrollment of Event"),
+                            fieldWithPath("_embedded.eventList[0].free").description("it tells if this event is free or not"),
+                            fieldWithPath("_embedded.eventList[0].offline").description("it tells if this event is offline meeting or not"),
+                            fieldWithPath("_embedded.eventList[0].eventStatus").description("status of new Event"),
+                            fieldWithPath("_embedded.eventList[0].owner.id").description("owner id of new Event"),
+                            fieldWithPath("_embedded.eventList[0]._links.self.href").description("link to self"),
+                            fieldWithPath("_links.first.href").description("link to first event page"),
+                            fieldWithPath("_links.prev.href").description("link to prev event page"),
                             fieldWithPath("_links.self.href").description("link to self"),
-                            fieldWithPath("_links.query-events.href").description("link to query events"),
-                            fieldWithPath("_links.update-event.href").description("link to update a existing event"),
-                            fieldWithPath("_links.profile.href").description("link to event`s profile docs")
-                            /**
-                             *  _links 정보는 위에서 선언해주긴 했으나, 이 또한 리스폰스에 포함되므로
-                             *  위와 같이 처리 해주거나 responseFields 에서 relaxedResponseFields 로 바꿔야 한다.
-                             *
-                             *  다만, relaxedResponseFields 로 할 경우 전체 응답 필드 중 일부가 비어 있어도 알 수가 없어
-                             *  문서화 데이터에 빠진 데이터가 생길 수가 있을 뿐만 아니라 테스트도 응답 필드에 한해
-                             *  불안정 해진다는 단점이 있다.
-                             */
+                            fieldWithPath("_links.next.href").description("link to next event page"),
+                            fieldWithPath("_links.last.href").description("link to last event page"),
+                            fieldWithPath("_links.profile.href").description("link to event`s profile docs"),
+                            fieldWithPath("page.size").description("event page size"),
+                            fieldWithPath("page.totalElements").description("event total element number"),
+                            fieldWithPath("page.totalPages").description("event total page size"),
+                            fieldWithPath("page.number").description("current event page number")
                     )
                 ))
         ;
@@ -341,6 +374,8 @@ public class  EventsControllerTests extends BaseControllerTest {
         // When
         this.mockMvc.perform(get("/api/events")
                 .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON)
                 .param("page","1")
                 .param("size", "10")
                 .param("sort","name,DESC"))
@@ -371,7 +406,39 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .andExpect(jsonPath("id").exists())
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.profile").exists())
-                .andDo(document("get-event"))
+                .andDo(document("get-event",
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("profile").description("link to event`s profile docs"),
+                                linkWithRel("update-event").description("link to update a event")
+
+                        ), requestHeaders (
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authorization header")
+
+                        ), responseHeaders (
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+
+                        ), responseFields (
+                                fieldWithPath("id").description("Identification of Event"),
+                                fieldWithPath("name").description("Name of Event"),
+                                fieldWithPath("description").description("description of Event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                                fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
+                                fieldWithPath("endEventDateTime").description("end event date time of Event"),
+                                fieldWithPath("location").description("location of Event"),
+                                fieldWithPath("basePrice").description("base price of Event"),
+                                fieldWithPath("maxPrice").description("max price of Event"),
+                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
+                                fieldWithPath("free").description("it tells if this event is free or not"),
+                                fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
+                                fieldWithPath("eventStatus").description("status of new Event"),
+                                fieldWithPath("owner.id").description("owner id of new Event"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.profile.href").description("link to event`s profile docs"),
+                                fieldWithPath("_links.update-event.href").description("link to update a existing event")
+                        )
+                ))
         ;
     }
 
@@ -396,14 +463,59 @@ public class  EventsControllerTests extends BaseControllerTest {
 
         // When & Then
         mockMvc.perform(put("/api/events/{id}",event.getId())
-                        .header(HttpHeaders.AUTHORIZATION, getBearerToken())
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .content(objectMapper.writeValueAsString(eventDto)))
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken())
+                .accept(MediaTypes.HAL_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").value(eventName))
                 .andExpect(jsonPath("_links.self").exists())
-                .andDo(document("update-event"))
+                .andDo(document("update-event",
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("profile").description("link to event`s profile docs")
+
+                        ), requestHeaders (
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Authorization header"),
+                                headerWithName(HttpHeaders.ACCEPT).description("accept header"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+
+                        ), requestFields (
+                                fieldWithPath("name").description("Name of new Event"),
+                                fieldWithPath("description").description("description of new Event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of new Event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of new Event"),
+                                fieldWithPath("beginEventDateTime").description("begin event date time of new Event"),
+                                fieldWithPath("endEventDateTime").description("end event date time of new Event"),
+                                fieldWithPath("location").description("location of new Event"),
+                                fieldWithPath("basePrice").description("base price of new Event"),
+                                fieldWithPath("maxPrice").description("max price of new Event"),
+                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of new Event")
+
+                        ), responseHeaders (
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("response data`s data type ")
+
+                        ), responseFields (
+                                fieldWithPath("id").description("Identification of Event"),
+                                fieldWithPath("name").description("Name of Event"),
+                                fieldWithPath("description").description("description of Event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("begin enrollment date time of Event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("close enrollment date time of Event"),
+                                fieldWithPath("beginEventDateTime").description("begin event date time of Event"),
+                                fieldWithPath("endEventDateTime").description("end event date time of Event"),
+                                fieldWithPath("location").description("location of Event"),
+                                fieldWithPath("basePrice").description("base price of Event"),
+                                fieldWithPath("maxPrice").description("max price of Event"),
+                                fieldWithPath("limitOfEnrollment").description("limit of enrollment of Event"),
+                                fieldWithPath("free").description("it tells if this event is free or not"),
+                                fieldWithPath("offline").description("it tells if this event is offline meeting or not"),
+                                fieldWithPath("eventStatus").description("status of new Event"),
+                                fieldWithPath("owner.id").description("owner id of new Event"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.profile.href").description("link to event`s profile docs")
+                        )
+                ))
         ;
     }
 
@@ -482,7 +594,6 @@ public class  EventsControllerTests extends BaseControllerTest {
                 .build()
                 ;
         event = eventRepository.save(event);
-        System.out.println(event+"############");
         return event;
     }
 
